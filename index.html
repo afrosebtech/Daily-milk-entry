@@ -6,26 +6,21 @@
   <title>Doodh Tracker</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      min-height: 100vh;
-      background: linear-gradient(135deg, #0f2027 0%, #1a3a4a 50%, #0f2027 100%);
-      font-family: Georgia, serif;
-      display: flex; flex-direction: column; align-items: center;
-      padding-bottom: 60px; color: white;
-    }
+    body { min-height:100vh; background:linear-gradient(135deg,#0f2027 0%,#1a3a4a 50%,#0f2027 100%); font-family:Georgia,serif; display:flex; flex-direction:column; align-items:center; padding-bottom:60px; color:white; }
     .header { width:100%; background:rgba(255,255,255,0.04); border-bottom:1px solid rgba(255,255,255,0.1); padding:22px 0 16px; text-align:center; margin-bottom:8px; }
     .header .icon { font-size:32px; margin-bottom:4px; }
     .header h1 { color:#e8d5a3; font-size:22px; letter-spacing:1px; }
     .header p { color:#8fb8c8; font-size:13px; margin-top:4px; }
     .tabs { display:flex; width:320px; margin:18px 0 0; background:rgba(255,255,255,0.06); border-radius:12px; overflow:hidden; }
-    .tab-btn { flex:1; padding:11px 0; border:none; cursor:pointer; font-size:14px; font-family:Georgia,serif; background:transparent; color:#8fb8c8; transition:all 0.2s; }
+    .tab-btn { flex:1; padding:11px 0; border:none; cursor:pointer; font-size:13px; font-family:Georgia,serif; background:transparent; color:#8fb8c8; transition:all 0.2s; }
     .tab-btn.active { background:linear-gradient(135deg,#e8d5a3,#c9a84c); color:#1a2a1a; font-weight:bold; }
     .content { width:320px; margin-top:20px; }
     .card { background:rgba(255,255,255,0.05); border-radius:14px; padding:20px; margin-bottom:16px; }
     .alert-green { background:rgba(232,213,163,0.1); border:1px solid rgba(232,213,163,0.3); border-radius:12px; padding:14px 16px; margin-bottom:18px; text-align:center; }
     .alert-yellow { background:rgba(255,160,0,0.08); border:1px dashed rgba(255,160,0,0.3); border-radius:12px; padding:10px 16px; margin-bottom:18px; text-align:center; color:#ffb84d; font-size:13px; }
-    label { color:#8fb8c8; font-size:13px; display:block; margin-bottom:6px; }
-    input, select { width:100%; padding:12px 14px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:10px; color:#fff; font-size:18px; font-family:Georgia,serif; outline:none; margin-bottom:14px; }
+    label { color:#8fb8c8; font-size:13px; display:block; margin-bottom:6px; margin-top:4px; }
+    input, select { width:100%; padding:12px 14px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:10px; color:#fff; font-size:16px; font-family:Georgia,serif; outline:none; margin-bottom:14px; }
+    input[type=date]::-webkit-calendar-picker-indicator { filter:invert(1); }
     select option { background:#1a3a4a; }
     .btn-save { width:100%; padding:14px; border-radius:12px; border:none; background:linear-gradient(135deg,#e8d5a3,#c9a84c); color:#1a1a1a; font-size:17px; font-weight:bold; cursor:pointer; transition:all 0.3s; font-family:Georgia,serif; }
     .btn-save.saved { background:linear-gradient(135deg,#4caf50,#2e7d32); color:white; }
@@ -45,6 +40,7 @@
     .btn-del-small { background:rgba(255,80,80,0.15); border:none; color:#ff8080; border-radius:7px; padding:4px 8px; cursor:pointer; font-size:13px; }
     .empty { text-align:center; color:#8fb8c8; padding:30px; font-size:14px; }
     .hidden { display:none; }
+    .date-toggle { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:6px 12px; color:#8fb8c8; font-size:12px; cursor:pointer; margin-bottom:14px; font-family:Georgia,serif; }
   </style>
 </head>
 <body>
@@ -54,20 +50,24 @@
   <p>Roz ka hisaab, mahine ka faida</p>
 </div>
 <div class="tabs">
-  <button class="tab-btn active" onclick="switchTab('add')">➕ Aaj Add</button>
+  <button class="tab-btn active" onclick="switchTab('add')">➕ Entry Karo</button>
   <button class="tab-btn" onclick="switchTab('history')">📋 Hisaab</button>
 </div>
 <div class="content">
+  <!-- ADD TAB -->
   <div id="tab-add">
     <div id="today-status"></div>
     <div class="card">
+      <label>📅 Kaunsi Date ka entry?</label>
+      <input type="date" id="inp-date" />
       <label>🥛 Kitna Doodh Aaya (Litres)?</label>
       <input type="number" id="inp-litres" step="0.1" min="0" placeholder="e.g. 1.5" />
       <label>💰 Rate (Rs/Litre)</label>
       <input type="number" id="inp-rate" step="1" min="0" value="45" />
-      <button class="btn-save" id="btn-save" onclick="handleAdd()">Save Karo</button>
+      <button class="btn-save" id="btn-save" onclick="handleAdd()">💾 Save Karo</button>
     </div>
   </div>
+  <!-- HISTORY TAB -->
   <div id="tab-history" class="hidden">
     <label>📅 Mahina chuniye:</label>
     <select id="month-select" onchange="renderHistory()"></select>
@@ -88,39 +88,76 @@
 const MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const PREFILL={"2026-05-01":{litres:1.5,rate:45},"2026-05-02":{litres:1.5,rate:45},"2026-05-03":{litres:1.5,rate:45},"2026-05-04":{litres:1.5,rate:45},"2026-05-05":{litres:1.5,rate:45},"2026-05-06":{litres:1.5,rate:45},"2026-05-07":{litres:1.5,rate:45},"2026-05-08":{litres:1.5,rate:45},"2026-05-09":{litres:1.0,rate:45},"2026-05-10":{litres:1.0,rate:45},"2026-05-11":{litres:1.0,rate:45},"2026-05-12":{litres:1.0,rate:45},"2026-05-13":{litres:1.0,rate:45},"2026-05-14":{litres:1.0,rate:45},"2026-05-15":{litres:1.0,rate:45},"2026-05-16":{litres:1.0,rate:45},"2026-05-17":{litres:1.0,rate:45},"2026-05-18":{litres:1.0,rate:45}};
 let entries={};
+
 function getTodayKey(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
 function getMonthKey(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");}
 function formatDate(s){const[y,m,day]=s.split("-");return day+" "+MONTHS[parseInt(m)-1];}
-function save(){localStorage.setItem("doodh-v2",JSON.stringify(entries));}
-function load(){const s=localStorage.getItem("doodh-v2");entries=s?{...PREFILL,...JSON.parse(s)}:{...PREFILL};save();}
+function saveData(){localStorage.setItem("doodh-v3",JSON.stringify(entries));}
+function loadData(){
+  const s=localStorage.getItem("doodh-v3");
+  // migrate old key
+  const old=localStorage.getItem("doodh-v2");
+  let stored=s?JSON.parse(s):(old?JSON.parse(old):null);
+  entries=stored?{...PREFILL,...stored}:{...PREFILL};
+  saveData();
+}
+
+function setTodayDate(){
+  const t=getTodayKey();
+  document.getElementById("inp-date").value=t;
+  document.getElementById("inp-date").max=t;
+}
+
 function switchTab(tab){
   document.getElementById("tab-add").classList.toggle("hidden",tab!=="add");
   document.getElementById("tab-history").classList.toggle("hidden",tab!=="history");
   document.querySelectorAll(".tab-btn").forEach((b,i)=>b.classList.toggle("active",(i===0&&tab==="add")||(i===1&&tab==="history")));
-  if(tab==="history"){populateMonthSelect();renderHistory();}else{renderToday();}
+  if(tab==="history"){populateMonthSelect();renderHistory();}
+  else{renderTodayStatus();}
 }
-function renderToday(){
+
+function renderTodayStatus(){
   const k=getTodayKey(),e=entries[k],el=document.getElementById("today-status");
-  if(e){el.innerHTML=`<div class="alert-green"><div style="color:#e8d5a3;font-size:13px;margin-bottom:4px;">Aaj ka entry ho gaya</div><div style="font-size:20px;font-weight:bold;">${e.litres}L x Rs${e.rate} = <span style="color:#a8e6a3;">Rs${(e.litres*e.rate).toFixed(1)}</span></div><button class="btn-delete" onclick="deleteEntry('${k}')">Delete karo</button></div>`;}
-  else{el.innerHTML=`<div class="alert-yellow">Aaj ka entry nahi hua abhi</div>`;}
+  if(e){
+    el.innerHTML=`<div class="alert-green"><div style="color:#e8d5a3;font-size:13px;margin-bottom:4px;">✅ Aaj (${formatDate(k)}) ka entry ho gaya</div><div style="font-size:20px;font-weight:bold;">${e.litres}L x Rs${e.rate} = <span style="color:#a8e6a3;">Rs${(e.litres*e.rate).toFixed(1)}</span></div><button class="btn-delete" onclick="deleteEntry('${k}')">🗑 Delete karo</button></div>`;
+  } else {
+    el.innerHTML=`<div class="alert-yellow">⚠️ Aaj ka entry nahi hua abhi</div>`;
+  }
 }
+
 function handleAdd(){
-  const l=parseFloat(document.getElementById("inp-litres").value),r=parseFloat(document.getElementById("inp-rate").value);
+  const dateVal=document.getElementById("inp-date").value;
+  const l=parseFloat(document.getElementById("inp-litres").value);
+  const r=parseFloat(document.getElementById("inp-rate").value);
+  if(!dateVal){alert("Date chuniye!");return;}
   if(!l||!r||l<=0||r<=0){alert("Litres aur Rate sahi daalo!");return;}
-  entries[getTodayKey()]={litres:l,rate:r};save();
+  entries[dateVal]={litres:l,rate:r};
+  saveData();
   document.getElementById("inp-litres").value="";
+  setTodayDate();
   const btn=document.getElementById("btn-save");
-  btn.textContent="Save Ho Gaya!";btn.classList.add("saved");
-  setTimeout(()=>{btn.textContent="Save Karo";btn.classList.remove("saved");},2000);
-  renderToday();
+  btn.textContent="✅ "+formatDate(dateVal)+" Save Ho Gaya!";
+  btn.classList.add("saved");
+  setTimeout(()=>{btn.textContent="💾 Save Karo";btn.classList.remove("saved");},2500);
+  renderTodayStatus();
 }
-function deleteEntry(k){delete entries[k];save();renderToday();renderHistory();}
+
+function deleteEntry(k){
+  if(!confirm(formatDate(k)+" ka entry delete karein?"))return;
+  delete entries[k];saveData();renderTodayStatus();
+  const hs=document.getElementById("tab-history");
+  if(!hs.classList.contains("hidden"))renderHistory();
+}
+
 function populateMonthSelect(){
   const sel=document.getElementById("month-select");
   const all=[...new Set(Object.keys(entries).map(k=>k.slice(0,7)))].sort().reverse();
   const cur=getMonthKey();if(!all.includes(cur))all.unshift(cur);
+  const prev=sel.value;
   sel.innerHTML=all.map(m=>{const[y,mo]=m.split("-");return`<option value="${m}">${MONTHS[parseInt(mo)-1]} ${y}</option>`;}).join("");
+  if(prev&&all.includes(prev))sel.value=prev;
 }
+
 function renderHistory(){
   const vm=document.getElementById("month-select").value||getMonthKey();
   const[y,mo]=vm.split("-");
@@ -132,10 +169,23 @@ function renderHistory(){
   document.getElementById("sum-din").textContent=me.length;
   const tk=getTodayKey();
   const list=document.getElementById("entry-list");
-  if(!me.length){list.innerHTML=`<div class="empty">Is mahine ka koi entry nahi</div>`;return;}
-  list.innerHTML=me.map(([k,v])=>`<div class="entry-row ${k===tk?"today":""}"><div><div class="entry-date ${k===tk?"today":""}">${formatDate(k)} ${k===tk?"🔵":""}</div><div class="entry-sub">${v.litres}L x Rs${v.rate}/L</div></div><div class="entry-right"><div class="entry-amount">Rs${(v.litres*v.rate).toFixed(1)}</div><button class="btn-del-small" onclick="deleteEntry('${k}')">Del</button></div></div>`).join("");
+  if(!me.length){list.innerHTML=`<div class="empty">Is mahine ka koi entry nahi 😊</div>`;return;}
+  list.innerHTML=me.map(([k,v])=>`
+    <div class="entry-row ${k===tk?"today":""}">
+      <div>
+        <div class="entry-date ${k===tk?"today":""}">${formatDate(k)} ${k===tk?"🔵":""}</div>
+        <div class="entry-sub">${v.litres}L x Rs${v.rate}/L</div>
+      </div>
+      <div class="entry-right">
+        <div class="entry-amount">Rs${(v.litres*v.rate).toFixed(1)}</div>
+        <button class="btn-del-small" onclick="deleteEntry('${k}')">🗑</button>
+      </div>
+    </div>`).join("");
 }
-load();renderToday();
+
+loadData();
+setTodayDate();
+renderTodayStatus();
 </script>
 </body>
 </html>
